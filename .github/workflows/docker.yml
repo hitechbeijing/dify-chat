@@ -28,7 +28,16 @@ jobs:
           token: ${{ secrets.MY_GITHUB_TOKEN }}  # Use the secret as an environment variable
           fetch-depth: 0
           fetch-tags: true
-
+      - name: Prepare release body
+        run: |
+          if [[ "$GITHUB_REF" =~ ^"refs/tags/" ]]; then
+            export GIT_TAG=$(echo "$GITHUB_REF" | sed -e "s/refs\/tags\///g")
+          fi
+          if [[ -n "$GIT_TAG" ]]; then
+            export IMAGE_TAG="$GIT_TAG"
+          else
+            IMAGE_TAG=nightly
+          fi
       # https://github.com/marketplace/actions/docker-login
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -42,7 +51,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: hello2008/dify-chat:nightly
+          tags: hello2008/dify-chat:${IMAGE_TAG}
           file: Dockerfile
           platforms: linux/amd64
 
@@ -58,7 +67,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.ALIYUN_REGISTRY }}/hs08/dify-chat:nightly
+          tags: ${{ secrets.ALIYUN_REGISTRY }}/hs08/dify-chat:${IMAGE_TAG}
           file: Dockerfile
           platforms: linux/amd64
      
@@ -74,6 +83,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.HUAWEICLOUD_REGISTRY }}/dify-chat/dify-chat:nightly
+          tags: ${{ secrets.HUAWEICLOUD_REGISTRY }}/dify-chat/dify-chat:${IMAGE_TAG}
           file: Dockerfile
           platforms: linux/amd64
