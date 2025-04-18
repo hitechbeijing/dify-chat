@@ -34,7 +34,7 @@ jobs:
             export GIT_TAG=$(echo "$GITHUB_REF" | sed -e "s/refs\/tags\///g")
           fi
           if [[ -n "$GIT_TAG" ]]; then
-            export IMAGE_TAG="$GIT_TAG"
+            IMAGE_TAG="$GIT_TAG"
           else
             IMAGE_TAG=nightly
           fi
@@ -51,7 +51,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: hello2008/dify-chat:${IMAGE_TAG}
+          tags: hello2008/dify-chat:"${IMAGE_TAG}"
           file: Dockerfile
           platforms: linux/amd64
 
@@ -67,7 +67,7 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.ALIYUN_REGISTRY }}/hs08/dify-chat:${IMAGE_TAG}
+          tags: ${{ secrets.ALIYUN_REGISTRY }}/hs08/dify-chat:"${IMAGE_TAG}"
           file: Dockerfile
           platforms: linux/amd64
      
@@ -83,6 +83,6 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.HUAWEICLOUD_REGISTRY }}/dify-chat/dify-chat:${IMAGE_TAG}
+          tags: ${{ secrets.HUAWEICLOUD_REGISTRY }}/dify-chat/dify-chat:"${IMAGE_TAG}"
           file: Dockerfile
           platforms: linux/amd64
