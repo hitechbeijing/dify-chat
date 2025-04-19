@@ -2,10 +2,9 @@ name: release
 
 on:
   schedule:
-    cron:
-     - '0 1 30 * *'  # This schedule runs every 1:30:00Z(09:30:00+08:00)
+    - cron: '0 1 * * *'
   # The "create tags" trigger is specifically focused on the creation of new tags, while the "push tags" trigger is activated when tags are pushed, including both new tag creations and updates to existing tags.
-   create:
+  create:
     tags:
       - "v*.*.*"                  # normal release
       - "nightly"                 # the only one mutable tag
