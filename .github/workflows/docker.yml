@@ -48,6 +48,21 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Login to ACR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ALIYUN_REGISTRY }}
+          username: ${{ secrets.ALIYUN_REGISTRY_USER }}
+          password: ${{ secrets.ALIYUN_REGISTRY_PASSWORD }}
+
+      - name: Login to SWR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.HUAWEICLOUD_REGISTRY }}
+          username: ${{ secrets.HUAWEICLOUD_REGISTRY_USER }}
+          password: ${{ secrets.HUAWEICLOUD_REGISTRY_PASSWORD }}
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -58,40 +73,10 @@ jobs:
       - name: Build and push full image
         uses: docker/build-push-action@v6
         with:
-          context: .
           push: true
-          tags: hello2008/dify-chat:${{ env.IMAGE_TAG }}
           file: Dockerfile
           platforms: linux/amd64,linux/arm64
-
-      - name: Login to ACR
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ALIYUN_REGISTRY }}
-          username: ${{ secrets.ALIYUN_REGISTRY_USER }}
-          password: ${{ secrets.ALIYUN_REGISTRY_PASSWORD }}
-
-      - name: Build and push full image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: ${{ secrets.ALIYUN_REGISTRY }}/hs08/dify-chat:${{ env.IMAGE_TAG }}
-          file: Dockerfile
-          platforms: linux/amd64,linux/arm64
-     
-      - name: Login to SWR
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.HUAWEICLOUD_REGISTRY }}
-          username: ${{ secrets.HUAWEICLOUD_REGISTRY_USER }}
-          password: ${{ secrets.HUAWEICLOUD_REGISTRY_PASSWORD }}
-
-      - name: Build and push full image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          push: true
-          tags: ${{ secrets.HUAWEICLOUD_REGISTRY }}/dify-chat/dify-chat:${{ env.IMAGE_TAG }}
-          file: Dockerfile
-          platforms: linux/amd64
+          tags: |
+            hello2008/dify-chat:${{ env.IMAGE_TAG }}
+            ${{ secrets.ALIYUN_REGISTRY }}/hs08/dify-chat:${{ env.IMAGE_TAG }}
+            ${{ secrets.HUAWEICLOUD_REGISTRY }}/dify-chat/dify-chat:${{ env.IMAGE_TAG }}
