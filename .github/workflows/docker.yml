@@ -3,6 +3,9 @@ name: release
 on:
   schedule:
     - cron: '0 1 * * *'
+  push:
+    branches:
+      - 'releases/**'
   # The "create tags" trigger is specifically focused on the creation of new tags, while the "push tags" trigger is activated when tags are pushed, including both new tag creations and updates to existing tags.
   create:
     tags:
