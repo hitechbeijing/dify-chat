@@ -24,14 +24,14 @@ jobs:
       - name: Ensure workspace ownership
         run: echo "chown -R $USER $GITHUB_WORKSPACE" && sudo chown -R $USER $GITHUB_WORKSPACE
 
-      - name: Debug
-        env:
-          MY_VAL: ${{ secrets.HUAWEICLOUD_REGISTRY }}
-        run: |
-          import os
-          for q in (os.getenv("MY_VAL")):
-            print(q)
-        shell: python
+      # - name: Debug
+      #   env:
+      #     MY_VAL: ${{ secrets.HUAWEICLOUD_REGISTRY }}
+      #   run: |
+      #     import os
+      #     for q in (os.getenv("MY_VAL")):
+      #       print(q)
+      #   shell: python
 
       # https://github.com/actions/checkout/blob/v3/README.md
       - name: Check out code
@@ -85,6 +85,7 @@ jobs:
           push: true
           file: Dockerfile
           platforms: linux/amd64,linux/arm64
+          provenance: false
           tags: |
             hello2008/dify-chat:${{ env.IMAGE_TAG }}
             ${{ secrets.ALIYUN_REGISTRY }}/hs08/dify-chat:${{ env.IMAGE_TAG }}
