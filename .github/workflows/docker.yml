@@ -31,6 +31,7 @@ jobs:
           token: ${{ secrets.MY_GITHUB_TOKEN }}  # Use the secret as an environment variable
           fetch-depth: 0
           fetch-tags: true
+          ref: release
       - name: Prepare release body
         run: |
           if [[ "$GITHUB_REF" =~ ^"refs/tags/" ]]; then
