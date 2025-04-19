@@ -25,8 +25,13 @@ jobs:
         run: echo "chown -R $USER $GITHUB_WORKSPACE" && sudo chown -R $USER $GITHUB_WORKSPACE
 
       - name: Debug
-        run: | 
-            echo "Resolved HUAWEICLOUD_REGISTRY: ${{ secrets.HUAWEICLOUD_REGISTRY }}"
+        env:
+          MY_VAL: ${{ secrets.HUAWEICLOUD_REGISTRY }}
+        run: |
+          import os
+          for q in (os.getenv("MY_VAL")):
+            print(q)
+        shell: python
 
       # https://github.com/actions/checkout/blob/v3/README.md
       - name: Check out code
