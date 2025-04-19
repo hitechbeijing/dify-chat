@@ -3,7 +3,7 @@ name: release
 on:
    schedule:
      cron:
-     - '0 1 * * *'  # This schedule runs every 1:00:00Z(09:00:00+08:00)
+     - '0 1 30 * *'  # This schedule runs every 1:30:00Z(09:30:00+08:00)
      branches:
      - release
     tags:
