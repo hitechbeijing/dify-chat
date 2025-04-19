@@ -80,3 +80,5 @@ jobs:
             hello2008/dify-chat:${{ env.IMAGE_TAG }}
             ${{ secrets.ALIYUN_REGISTRY }}/hs08/dify-chat:${{ env.IMAGE_TAG }}
             ${{ secrets.HUAWEICLOUD_REGISTRY }}/dify-chat/dify-chat:${{ env.IMAGE_TAG }}
+      - name: Debug
+        run: echo "Resolved HUAWEICLOUD_REGISTRY: ${{ secrets.HUAWEICLOUD_REGISTRY }}"
