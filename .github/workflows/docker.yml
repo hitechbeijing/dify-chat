@@ -26,7 +26,7 @@ jobs:
 
       - name: Debug
         run: | 
-            echo "Resolved HUAWEICLOUD_REGISTRY: ${{ secrets.HUAWEICLOUD_REGISTRY }}"
+            echo "Resolved HUAWEICLOUD_REGISTRY: ${{ env.HUAWEICLOUD_REGISTRY }}"
 
       # https://github.com/actions/checkout/blob/v3/README.md
       - name: Check out code
@@ -56,14 +56,14 @@ jobs:
       - name: Login to ACR
         uses: docker/login-action@v1
         with:
-          registry: ${{ secrets.ALIYUN_REGISTRY }}
+          registry: ${{ env.ALIYUN_REGISTRY }}
           username: ${{ secrets.ALIYUN_REGISTRY_USER }}
           password: ${{ secrets.ALIYUN_REGISTRY_PASSWORD }}
 
       - name: Login to SWR
         uses: docker/login-action@v1
         with:
-          registry: ${{ secrets.HUAWEICLOUD_REGISTRY }}
+          registry: ${{ env.HUAWEICLOUD_REGISTRY }}
           username: ${{ secrets.HUAWEICLOUD_REGISTRY_USER }}
           password: ${{ secrets.HUAWEICLOUD_REGISTRY_PASSWORD }}
 
@@ -82,5 +82,5 @@ jobs:
           platforms: linux/amd64,linux/arm64
           tags: |
             hello2008/dify-chat:${{ env.IMAGE_TAG }}
-            ${{ secrets.ALIYUN_REGISTRY }}/hs08/dify-chat:${{ env.IMAGE_TAG }}
-            ${{ secrets.HUAWEICLOUD_REGISTRY }}/dify-chat/dify-chat:${{ env.IMAGE_TAG }}
+            ${{ env.ALIYUN_REGISTRY }}/hs08/dify-chat:${{ env.IMAGE_TAG }}
+            ${{ env.HUAWEICLOUD_REGISTRY }}/dify-chat/dify-chat:${{ env.IMAGE_TAG }}
