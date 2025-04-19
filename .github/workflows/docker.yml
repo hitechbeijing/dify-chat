@@ -5,7 +5,7 @@ on:
     - cron: '0 1 * * *'
   push:
     branches:
-      - 'releases/**'
+      - 'main'
   # The "create tags" trigger is specifically focused on the creation of new tags, while the "push tags" trigger is activated when tags are pushed, including both new tag creations and updates to existing tags.
   create:
     tags:
@@ -28,10 +28,9 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.MY_GITHUB_TOKEN }}  # Use the secret as an environment variable
-          fetch-depth: 0
+          fetch-depth: 1
           fetch-tags: true
-          ref: release
+          repository:  lexmin0412/dify-chat
       - name: Prepare release body
         run: |
           if [[ "$GITHUB_REF" =~ ^"refs/tags/" ]]; then
