@@ -24,10 +24,10 @@ jobs:
       - name: Ensure workspace ownership
         run: echo "chown -R $USER $GITHUB_WORKSPACE" && sudo chown -R $USER $GITHUB_WORKSPACE
 
-       - name: Debug
+      - name: Debug
         run: | 
             echo "Resolved HUAWEICLOUD_REGISTRY: ${{ secrets.HUAWEICLOUD_REGISTRY }}"
-            
+
       # https://github.com/actions/checkout/blob/v3/README.md
       - name: Check out code
         uses: actions/checkout@v4
