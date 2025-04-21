@@ -1,6 +1,7 @@
 name: release
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '0 1 * * *'
   push:
@@ -52,6 +53,8 @@ jobs:
             IMAGE_TAG=nightly
           fi
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          DATE=$(date +%Y%m%d)
+          echo "IMAGE_DATE=$DATE" >> $GITHUB_ENV
       # https://github.com/marketplace/actions/docker-login
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -89,5 +92,8 @@ jobs:
           provenance: false
           tags: |
             hello2008/dify-chat:${{ env.IMAGE_TAG }}
+            hello2008/dify-chat:${{env.IMAGE_DATE}}
             ${{ secrets.ALIYUN_REGISTRY }}/hs08/dify-chat:${{ env.IMAGE_TAG }}
+            ${{ secrets.ALIYUN_REGISTRY }}/hs08/dify-chat:${{ env.IMAGE_DATE }}
             ${{ secrets.HUAWEICLOUD_REGISTRY }}/dify-chat/dify-chat:${{ env.IMAGE_TAG }}
+            ${{ secrets.HUAWEICLOUD_REGISTRY }}/dify-chat/dify-chat:${{ env.IMAGE_DATE }}
