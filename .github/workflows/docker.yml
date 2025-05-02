@@ -44,8 +44,10 @@ jobs:
           repository:  lexmin0412/dify-chat
       - name: Prepare release body
         run: |
+          echo $GITHUB_REF
           if [[ "$GITHUB_REF" =~ ^"refs/tags/" ]]; then
             export GIT_TAG=$(echo "$GITHUB_REF" | sed -e "s/refs\/tags\///g")
+            echo $GIT_TAG
           fi
           if [[ -n "$GIT_TAG" ]]; then
             IMAGE_TAG="$GIT_TAG"
