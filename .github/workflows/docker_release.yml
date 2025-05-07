@@ -42,10 +42,7 @@ jobs:
           repository:  lexmin0412/dify-chat
       - name: Prepare release body
         run: |
-          echo "$GITHUB_REF"
-          if [[ "$GITHUB_REF" =~ ^"refs/tags/" ]]; then
-            export GIT_TAG=$(git tag -l --sort=-v:refname | head -n 1)
-          fi
+          export GIT_TAG=$(git tag -l --sort=-v:refname | head -n 1)
           if [[ -n "$GIT_TAG" ]]; then
             IMAGE_TAG="$GIT_TAG"
           else
