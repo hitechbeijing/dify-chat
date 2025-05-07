@@ -40,9 +40,8 @@ jobs:
           fetch-depth: 4
           fetch-tags: true
           repository:  lexmin0412/dify-chat
-      - name: Prepare release body
-        run: |
-          export GIT_TAG=$(git tag -l --sort=-v:refname | head -n 1)
+      - run: |
+          export GIT_TAG=$("git tag -l --sort=-v:refname | head -n 1")
           echo $GIT_TAG
           if [[ -n "$GIT_TAG" ]]; then
             IMAGE_TAG="$GIT_TAG"
