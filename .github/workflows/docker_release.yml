@@ -41,7 +41,7 @@ jobs:
           fetch-tags: true
           repository:  lexmin0412/dify-chat
       - run: |
-          export GIT_TAG=$("git tag -l --sort=-v:refname | head -n 1")
+          export GIT_TAG=$(git tag -l --sort=-v:refname | head -n 1)
           echo $GIT_TAG
           if [[ -n "$GIT_TAG" ]]; then
             IMAGE_TAG="$GIT_TAG"
