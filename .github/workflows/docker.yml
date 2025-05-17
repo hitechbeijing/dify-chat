@@ -2,12 +2,8 @@ name: release
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '0 1 * * *'
-  push:
-    branches:
-      - 'main'
-      - 'release'
+  # schedule:
+  #   - cron: '0 1 * * *'
   # The "create tags" trigger is specifically focused on the creation of new tags, while the "push tags" trigger is activated when tags are pushed, including both new tag creations and updates to existing tags.
   create:
     tags:
@@ -39,12 +35,11 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 4
+          fetch-depth: 0
           fetch-tags: true
           repository:  lexmin0412/dify-chat
       - name: Prepare release body
         run: |
-          echo "$GITHUB_REF"
           if [[ "$GITHUB_REF" =~ ^"refs/tags/" ]]; then
             export GIT_TAG=$(echo "$GITHUB_REF" | sed -e "s/refs\/tags\///g")
           fi
