@@ -36,14 +36,11 @@ jobs:
       # https://github.com/actions/checkout/blob/v3/README.md
       - name: Check out code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          fetch-tags: false
-          repository:  lexmin0412/dify-chat
       - run: |
-          echo "IMAGE_TAG=v0.2.0" >> $GITHUB_ENV
+          git clone https://github.com/lexmin0412/dify-chat.git
           DATE=$(date +%Y%m%d)
           echo "IMAGE_DATE=$DATE" >> $GITHUB_ENV
+          echo "IMAGE_TAG=v0.2.0" >> $GITHUB_ENV
     
       # https://github.com/marketplace/actions/docker-login
       - name: Login to Docker Hub
