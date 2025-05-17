@@ -1,0 +1,89 @@
+name: docker_release_temporary
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+      - 'release'
+  # The "create tags" trigger is specifically focused on the creation of new tags, while the "push tags" trigger is activated when tags are pushed, including both new tag creations and updates to existing tags.
+  create:
+    tags:
+      - "v*.*.*"                  # normal release
+      - "nightly"                 # the only one mutable tag
+
+# https://docs.github.com/en/actions/using-jobs/using-concurrency
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ensure workspace ownership
+        run: echo "chown -R $USER $GITHUB_WORKSPACE" && sudo chown -R $USER $GITHUB_WORKSPACE
+
+      # - name: Debug
+      #   env:
+      #     MY_VAL: ${{ secrets.HUAWEICLOUD_REGISTRY }}
+      #   run: |
+      #     import os
+      #     for q in (os.getenv("MY_VAL")):
+      #       print(q)
+      #   shell: python
+
+      # https://github.com/actions/checkout/blob/v3/README.md
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+          repository:  lexmin0412/dify-chat
+      - run: |
+          echo "IMAGE_TAG=v0.2.0" >> $GITHUB_ENV
+          DATE=$(date +%Y%m%d)
+          echo "IMAGE_DATE=$DATE" >> $GITHUB_ENV
+    
+      # https://github.com/marketplace/actions/docker-login
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      
+      - name: Login to ACR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ALIYUN_REGISTRY }}
+          username: ${{ secrets.ALIYUN_REGISTRY_USER }}
+          password: ${{ secrets.ALIYUN_REGISTRY_PASSWORD }}
+
+      - name: Login to SWR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.HUAWEICLOUD_REGISTRY }}
+          username: ${{ secrets.HUAWEICLOUD_REGISTRY_USER }}
+          password: ${{ secrets.HUAWEICLOUD_REGISTRY_PASSWORD }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # https://github.com/marketplace/actions/build-and-push-docker-images
+      - name: Build and push full image
+        uses: docker/build-push-action@v6
+        with:
+          push: true
+          file: Dockerfile
+          platforms: linux/amd64,linux/arm64
+          provenance: false
+          tags: |
+            hello2008/dify-chat:${{ env.IMAGE_TAG }}
+            hello2008/dify-chat:${{env.IMAGE_DATE}}
+            ${{ secrets.ALIYUN_REGISTRY }}/hs08/dify-chat:${{ env.IMAGE_TAG }}
+            ${{ secrets.ALIYUN_REGISTRY }}/hs08/dify-chat:${{ env.IMAGE_DATE }}
+            ${{ secrets.HUAWEICLOUD_REGISTRY }}/dify-chat/dify-chat:${{ env.IMAGE_TAG }}
+            ${{ secrets.HUAWEICLOUD_REGISTRY }}/dify-chat/dify-chat:${{ env.IMAGE_DATE }}
