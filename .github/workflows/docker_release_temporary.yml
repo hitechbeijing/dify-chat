@@ -70,7 +70,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          file: Dockerfile
+          file: ./dify-chat-lexmin0412/Dockerfile
           platforms: linux/amd64,linux/arm64
           provenance: false
           context: dify-chat-lexmin0412
