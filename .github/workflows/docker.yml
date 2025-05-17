@@ -2,8 +2,8 @@ name: release
 
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: '0 1 * * *'
+  schedule:
+    - cron: '0 1 * * *'
   # The "create tags" trigger is specifically focused on the creation of new tags, while the "push tags" trigger is activated when tags are pushed, including both new tag creations and updates to existing tags.
   create:
     tags:
@@ -35,9 +35,10 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
-          fetch-tags: true
+          fetch-depth: 1
+          fetch-tags: false
           repository:  lexmin0412/dify-chat
+          path: dify-chat-lexmin0412
       - name: Prepare release body
         run: |
           if [[ "$GITHUB_REF" =~ ^"refs/tags/" ]]; then
@@ -83,9 +84,10 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
-          file: Dockerfile
+          file: ./dify-chat-lexmin0412/Dockerfile
           platforms: linux/amd64,linux/arm64
           provenance: false
+          context: dify-chat-lexmin0412
           tags: |
             hello2008/dify-chat:${{ env.IMAGE_TAG }}
             hello2008/dify-chat:${{env.IMAGE_DATE}}
