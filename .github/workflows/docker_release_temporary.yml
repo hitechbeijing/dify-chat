@@ -33,7 +33,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
       - run: |
-          https://github.com/lexmin0412/dify-chat.git dify-chat-lexmin0412
+          git clone https://github.com/lexmin0412/dify-chat.git dify-chat-lexmin0412
           DATE=$(date +%Y%m%d)
           echo "IMAGE_DATE=$DATE" >> $GITHUB_ENV
           echo "IMAGE_TAG=v0.2.0" >> $GITHUB_ENV
