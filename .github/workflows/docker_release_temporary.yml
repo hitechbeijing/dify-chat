@@ -33,7 +33,7 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
       - run: |
-          git clone https://github.com/lexmin0412/dify-chat.git
+          https://github.com/lexmin0412/dify-chat.git dify-chat-lexmin0412
           DATE=$(date +%Y%m%d)
           echo "IMAGE_DATE=$DATE" >> $GITHUB_ENV
           echo "IMAGE_TAG=v0.2.0" >> $GITHUB_ENV
@@ -73,7 +73,7 @@ jobs:
           file: Dockerfile
           platforms: linux/amd64,linux/arm64
           provenance: false
-          context: dify-chat
+          context: dify-chat-lexmin0412
           tags: |
             hello2008/dify-chat:${{ env.IMAGE_TAG }}
             hello2008/dify-chat:${{env.IMAGE_DATE}}
