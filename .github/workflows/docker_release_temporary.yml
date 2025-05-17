@@ -2,10 +2,6 @@ name: docker_release_temporary
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - 'main'
-      - 'release'
   # The "create tags" trigger is specifically focused on the creation of new tags, while the "push tags" trigger is activated when tags are pushed, including both new tag creations and updates to existing tags.
   create:
     tags:
