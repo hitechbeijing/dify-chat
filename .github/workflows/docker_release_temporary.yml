@@ -34,6 +34,7 @@ jobs:
         uses: actions/checkout@v4
       - run: |
           git clone https://github.com/lexmin0412/dify-chat.git
+          git checkout origin/main
           DATE=$(date +%Y%m%d)
           echo "IMAGE_DATE=$DATE" >> $GITHUB_ENV
           echo "IMAGE_TAG=v0.2.0" >> $GITHUB_ENV
