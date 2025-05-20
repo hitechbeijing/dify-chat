@@ -42,6 +42,7 @@ jobs:
           repository:  lexmin0412/dify-chat
           path: dify-chat-lexmin0412
       - run: |
+          cd dify-chat-lexmin0412
           export GIT_TAG=$(git tag -l --sort=-v:refname | head -n 1)
           echo $GIT_TAG      
           IMAGE_TAG="$GIT_TAG"
