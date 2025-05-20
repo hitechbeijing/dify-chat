@@ -2,10 +2,10 @@ name: docker_release
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - 'main'
-      - 'release'
+  # push:
+  #   branches:
+  #     - 'main'
+  #     - 'release'
   # The "create tags" trigger is specifically focused on the creation of new tags, while the "push tags" trigger is activated when tags are pushed, including both new tag creations and updates to existing tags.
   create:
     tags:
@@ -48,8 +48,6 @@ jobs:
           IMAGE_TAG="$GIT_TAG"
           git checkout $IMAGE_TAG
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
-          DATE=$(date +%Y%m%d)
-          echo "IMAGE_DATE=$DATE" >> $GITHUB_ENV
     
       # https://github.com/marketplace/actions/docker-login
       - name: Login to Docker Hub
@@ -89,8 +87,5 @@ jobs:
           context: dify-chat-lexmin0412
           tags: |
             hello2008/dify-chat:${{ env.IMAGE_TAG }}
-            hello2008/dify-chat:${{env.IMAGE_DATE}}
             ${{ secrets.ALIYUN_REGISTRY }}/hs08/dify-chat:${{ env.IMAGE_TAG }}
-            ${{ secrets.ALIYUN_REGISTRY }}/hs08/dify-chat:${{ env.IMAGE_DATE }}
             ${{ secrets.HUAWEICLOUD_REGISTRY }}/dify-chat/dify-chat:${{ env.IMAGE_TAG }}
-            ${{ secrets.HUAWEICLOUD_REGISTRY }}/dify-chat/dify-chat:${{ env.IMAGE_DATE }}
