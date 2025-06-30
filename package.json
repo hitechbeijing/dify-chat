@@ -1,14 +1,19 @@
 {
 	"name": "dify-chat-root",
 	"private": true,
-	"version": "0.2.0",
+	"version": "0.4.0",
 	"scripts": {
-		"build:pkgs": "pnpm --filter @dify-chat/* build",
 		"build": "pnpm build:pkgs && pnpm --filter dify-chat-app-react build",
+		"build:pkgs": "pnpm --filter @dify-chat/* recursive run build",
+		"build:next": "pnpm build:pkgs && pnpm --filter dify-chat-app-nextjs build",
+		"build:docs": "pnpm --filter dify-chat-docs build",
 		"dev": "pnpm --filter dify-chat-app-react dev",
+		"dev:next": "pnpm --filter dify-chat-app-nextjs dev",
+		"dev:docs": "pnpm --filter dify-chat-docs dev",
 		"format": "prettier --write .",
 		"lint": "eslint .",
 		"preview": "pnpm --filter dify-chat-app-react preview",
+		"preview:next": "pnpm --filter dify-chat-app-nextjs start",
 		"prepare": "husky"
 	},
 	"devDependencies": {
@@ -23,7 +28,7 @@
 		"husky": "catalog:",
 		"lint-staged": "catalog:",
 		"prettier": "catalog:",
-		"prettier-plugin-tailwindcss": "^0.6.11",
+		"prettier-plugin-tailwindcss": "catalog:",
 		"typescript": "catalog:",
 		"typescript-eslint": "catalog:"
 	},

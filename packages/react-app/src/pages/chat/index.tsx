@@ -1,31 +1,20 @@
-import { useDifyChat } from '@dify-chat/core'
-import { Spin } from 'antd'
-
-import { Logo } from '@/components/logo'
+import { difyChatRuntimeConfig } from '@/config/global'
 import MultiAppLayout from '@/layout/multi-app-layout'
 import SingleAppLayout from '@/layout/single-app-layout'
+import { appService } from '@/services/app/multiApp'
+import { appConfig } from '@/services/app/singleApp'
 
 export default function ChatPage() {
-	const { user, mode } = useDifyChat()
+	const mode = difyChatRuntimeConfig.get().runningMode
 
-	// 必须先有用户, 再开始渲染布局，因为所有界面上展示的数据都需要调用 Dify API, 而所有的 Dify API 都需要用户标识
-	if (!user) {
+	if (mode === 'singleApp') {
 		return (
-			<div className="w-screen h-screen flex flex-col items-center justify-center bg-theme-bg">
-				<div className="absolute flex-col w-full h-full left-0 top-0 z-50 flex items-center justify-center">
-					<Logo hideGithubIcon />
-					<div className="text-theme-text">授权登录中...</div>
-					<div className="mt-6">
-						<Spin spinning />
-					</div>
-				</div>
-			</div>
+			<SingleAppLayout
+				getAppConfig={appConfig.getConfig}
+				setAppConfig={appConfig.setConfig}
+			/>
 		)
 	}
 
-	if (mode === 'singleApp') {
-		return <SingleAppLayout />
-	}
-
-	return <MultiAppLayout />
+	return <MultiAppLayout listApi={appService.getApps} />
 }
