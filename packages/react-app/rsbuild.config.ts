@@ -12,12 +12,23 @@ export default defineConfig({
 	source: {
 		tsconfigPath: process.env.NODE_ENV === 'development' ? tsconfigDevPath : tsconfigProdPath,
 		include: [{ not: /[\\/]core-js[\\/]/ }],
+		define: {
+			// 调试模式
+			'process.env.PUBLIC_DEBUG_MODE': JSON.stringify(process.env.PUBLIC_DEBUG_MODE),
+			// 应用配置 API 基础路径
+			'process.env.PUBLIC_APP_API_BASE': JSON.stringify(process.env.PUBLIC_APP_API_BASE),
+			// Dify 代理 API 基础路径
+			'process.env.PUBLIC_DIFY_PROXY_API_BASE': JSON.stringify(
+				process.env.PUBLIC_DIFY_PROXY_API_BASE,
+			),
+		},
 	},
 	output: {
 		polyfill: 'entry',
 	},
 	html: {
 		template: path.resolve(__dirname, './public/template.html'),
+		favicon: path.resolve(__dirname, './public/logo.png'),
 	},
 	plugins: [
 		pluginSourceBuild(),
@@ -37,14 +48,6 @@ export default defineConfig({
 		port: 5200,
 		// 允许外部访问
 		host: '0.0.0.0',
-		proxy: [
-			{
-				// 代理 Dify API
-				target: process.env.DIFY_API_DOMAIN || 'https://api.dify.ai',
-				changeOrigin: true,
-				context: process.env.DIFY_API_PREFIX || '/v1',
-			},
-		],
 	},
 	tools: {
 		postcss: {

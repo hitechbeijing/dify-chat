@@ -6,10 +6,8 @@ import {
 	PlusOutlined,
 } from '@ant-design/icons'
 import { DifyApi, IConversationItem } from '@dify-chat/api'
-import { AppIcon, AppInfo, ConversationList, LucideIcon } from '@dify-chat/components'
-import { HeaderLayout } from '@dify-chat/components'
 import { ConversationsContextProvider, IDifyAppItem, useAppContext } from '@dify-chat/core'
-import { isTempId, useIsMobile } from '@dify-chat/helpers'
+import { generateUuidV4, isTempId, useIsMobile } from '@dify-chat/helpers'
 import { ThemeModeEnum, ThemeModeLabelEnum, useThemeContext } from '@dify-chat/theme'
 import {
 	Button,
@@ -29,6 +27,8 @@ import dayjs from 'dayjs'
 import { useSearchParams } from 'pure-react-router'
 import React, { useEffect, useMemo, useState } from 'react'
 
+import { AppIcon, AppInfo, ConversationList, LucideIcon } from '@/components'
+import { HeaderLayout } from '@/components'
 import ChatboxWrapper from '@/components/chatbox-wrapper'
 import { DEFAULT_CONVERSATION_NAME } from '@/constants'
 import { useLatest } from '@/hooks/use-latest'
@@ -65,7 +65,7 @@ export default function ChatLayout(props: IChatLayoutProps) {
 	const [conversations, setConversations] = useState<IConversationItem[]>([])
 	const [currentConversationId, setCurrentConversationId] = useState<string>('')
 	const currentConversationInfo = useMemo(() => {
-		return conversations.find(item => item.id === currentConversationId)
+		return conversations?.find(item => item.id === currentConversationId)
 	}, [conversations, currentConversationId])
 	const isMobile = useIsMobile()
 
@@ -96,7 +96,7 @@ export default function ChatLayout(props: IChatLayoutProps) {
 			setCoversationListLoading(true)
 		}
 		try {
-			const result = await difyApi?.getConversationList()
+			const result = await difyApi?.listConversations()
 			const newItems =
 				result?.data?.map(item => {
 					return {
@@ -126,7 +126,7 @@ export default function ChatLayout(props: IChatLayoutProps) {
 	 */
 	const onAddConversation = () => {
 		// 创建新对话
-		const newKey = `temp_${Math.random()}`
+		const newKey = `temp_${generateUuidV4()}`
 		// 使用函数式更新保证状态一致性（修复潜在竞态条件）
 		setConversations(prev => {
 			return [
@@ -349,7 +349,18 @@ export default function ChatLayout(props: IChatLayoutProps) {
 				)}
 			</Spin>
 		)
-	}, [conversations, onRenameConversation, onDeleteConversation, setCurrentConversationId])
+	}, [
+		conversations,
+		conversationListLoading,
+		currentConversationId,
+		onRenameConversation,
+		onDeleteConversation,
+		setCurrentConversationId,
+	])
+
+	const disableNewButton = useMemo(() => {
+		return conversations?.some(item => isTempId(item.id))
+	}, [conversations])
 
 	return (
 		<ConversationsContextProvider
@@ -398,6 +409,7 @@ export default function ChatLayout(props: IChatLayoutProps) {
 										{/* 添加会话 */}
 										{currentApp ? (
 											<Button
+												disabled={disableNewButton}
 												onClick={() => {
 													onAddConversation()
 												}}

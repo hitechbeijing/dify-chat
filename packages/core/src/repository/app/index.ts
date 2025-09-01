@@ -1,14 +1,24 @@
-import { AppModeEnums } from "../../constants";
+import { AppModeEnums } from '../../constants'
+import { EIsEnabled } from '../../enums'
 
 export interface IDifyAppRequestConfig {
 	/**
 	 * 请求地址
 	 */
-	apiBase: string;
+	apiBase: string
 	/**
 	 * Dify APP API 密钥
 	 */
-	apiKey: string;
+	apiKey: string
+}
+
+/**
+ * 参数配置 Item
+ */
+export interface IParamItem {
+	variable: string
+	required: boolean
+	hide: boolean
 }
 
 /**
@@ -18,7 +28,7 @@ export interface IDifyAppItem {
 	/**
 	 * 唯一标识
 	 */
-	id: string;
+	id: string
 	/**
 	 * Dify 应用基本信息
 	 */
@@ -26,24 +36,28 @@ export interface IDifyAppItem {
 		/**
 		 * 应用名称
 		 */
-		name: string;
+		name: string
 		/**
 		 * 应用类型
 		 */
-		mode?: AppModeEnums;
+		mode?: AppModeEnums
 		/**
 		 * 应用描述
 		 */
-		description: string;
+		description: string
 		/**
 		 * 应用标签
 		 */
-		tags: string[];
-	};
+		tags: string[]
+	}
+	/**
+	 * 应用状态 1-启用 2-禁用
+	 */
+	isEnabled: EIsEnabled
 	/**
 	 * 请求配置
 	 */
-	requestConfig: IDifyAppRequestConfig;
+	requestConfig: IDifyAppRequestConfig
 	/**
 	 * 回复表单配置
 	 */
@@ -51,12 +65,12 @@ export interface IDifyAppItem {
 		/**
 		 * 是否启用
 		 */
-		enabled: boolean;
+		enabled: boolean
 		/**
 		 * 反馈的占位文字
 		 */
-		feedbackText?: string;
-	};
+		feedbackText?: string
+	}
 	/**
 	 * 输入参数配置
 	 */
@@ -64,8 +78,8 @@ export interface IDifyAppItem {
 		/**
 		 * 开始对话后，是否支持更新对话参数
 		 */
-		enableUpdateAfterCvstStarts: boolean;
-	};
+		enableUpdateAfterCvstStarts: boolean
+	}
 	/**
 	 * 其他扩展配置
 	 */
@@ -81,10 +95,10 @@ export interface IDifyAppItem {
 				/**
 				 * 展示模式 default-默认（对话开始后不展示） always-固定展示
 				 */
-				displayMode?: "default" | "always";
-			};
-		};
-	};
+				displayMode?: 'default' | 'always'
+			}
+		}
+	}
 }
 
 /**
@@ -94,15 +108,15 @@ abstract class DifyAppStoreBase {
 	/**
 	 * 是否只读
 	 */
-	abstract readonly?: boolean;
+	abstract readonly?: boolean
 	/**
 	 * 获取 App 列表
 	 */
-	abstract getApps(): Promise<IDifyAppItem[]>;
+	abstract getApps(): Promise<IDifyAppItem[]>
 	/**
 	 * 通过 id 获取 App 详情
 	 */
-	abstract getApp(id: string): Promise<IDifyAppItem | undefined>;
+	abstract getApp(id: string): Promise<IDifyAppItem | undefined>
 }
 
 /**
@@ -113,7 +127,7 @@ export abstract class DifyAppStoreReadonly extends DifyAppStoreBase {
 	/**
 	 * 声明只读
 	 */
-	abstract readonly: true;
+	abstract readonly: true
 }
 
 /**
@@ -124,17 +138,17 @@ export abstract class DifyAppStore extends DifyAppStoreBase {
 	/**
 	 * 声明可读写
 	 */
-	abstract readonly: false;
+	abstract readonly: false
 	/**
 	 * 新增 App
 	 */
-	abstract addApp(app: IDifyAppItem): Promise<unknown>;
+	abstract addApp(app: IDifyAppItem): Promise<unknown>
 	/**
 	 * 更新 App
 	 */
-	abstract updateApp(app: IDifyAppItem): Promise<unknown>;
+	abstract updateApp(app: IDifyAppItem): Promise<unknown>
 	/**
 	 * 删除 App
 	 */
-	abstract deleteApp(id: string): Promise<unknown>;
+	abstract deleteApp(id: string): Promise<unknown>
 }

@@ -1,14 +1,13 @@
-import { Prompts } from '@ant-design/x'
 import { DifyApi, IFile, IMessageFileItem, MessageFileBelongsToEnum } from '@dify-chat/api'
 import { IMessageItem4Render } from '@dify-chat/api'
-import { Chatbox } from '@dify-chat/components'
 import { useAppContext } from '@dify-chat/core'
 import { Roles, useConversationsContext } from '@dify-chat/core'
 import { isTempId } from '@dify-chat/helpers'
-import { Button, Empty, Form, GetProp, Spin } from 'antd'
+import { Button, Empty, Form, Spin } from 'antd'
 import dayjs from 'dayjs'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
+import { Chatbox } from '@/components'
 import { useLatest } from '@/hooks/use-latest'
 import { useX } from '@/hooks/useX'
 import workflowDataStorage from '@/hooks/useX/workflow-data-storage'
@@ -66,6 +65,10 @@ export default function ChatboxWrapper(props: IChatboxWrapperProps) {
 	const [messagesloadingEnabled, setMessagesloadingEnabled] = useState(true)
 	const [initLoading, setInitLoading] = useState<boolean>(false)
 	const [historyMessages, setHistoryMessages] = useState<IMessageItem4Render[]>([])
+	const [hasMore, setHasMore] = useState<boolean>(false)
+
+	// 添加一个状态来标记是否正在切换会话
+	const [isSwitchingConversation, setIsSwitchingConversation] = useState(false)
 
 	const [nextSuggestions, setNextSuggestions] = useState<string[]>([])
 	// 定义 ref, 用于获取最新的 conversationId
@@ -76,6 +79,8 @@ export default function ChatboxWrapper(props: IChatboxWrapperProps) {
 	const latestState = useLatest({
 		inputParams: currentConversationInfo?.inputs || {},
 	})
+
+	const defaultRequestLimit = 10
 
 	const filesRef = useRef<IFile[]>([])
 
@@ -108,19 +113,37 @@ export default function ChatboxWrapper(props: IChatboxWrapperProps) {
 	)
 
 	/**
-	 * 获取对话的历史消息
+	 * 初始化对话历史消息（从头开始加载，清空现有历史）
+	 * @param conversationId 对话ID
+	 * @param preserveLoadedCount 是否保持已加载的消息数量（用于反馈后刷新）
 	 */
-	const getConversationMessages = useCallback(
-		async (conversationId: string) => {
+	const initConversationMessages = useCallback(
+		async (
+			conversationId: string = currentConversationId,
+			preserveLoadedCount: boolean = false,
+		) => {
 			// 如果是临时 ID，则不获取历史消息
 			if (isTempId(conversationId)) {
 				return
 			}
-			const result = await difyApi.getConversationHistory(conversationId)
+
+			// 计算要请求的消息数量
+			let requestLimit = defaultRequestLimit // 默认限制
+			if (preserveLoadedCount && historyMessages.length > 0) {
+				// 保持已加载的消息数量，每2条消息代表一轮对话（用户问题+AI回答）
+				requestLimit = Math.max(defaultRequestLimit, Math.ceil(historyMessages.length / 2))
+			}
+
+			const result = await difyApi.listMessages(conversationId, {
+				first_id: '', // 从头开始加载
+				limit: requestLimit,
+			})
 
 			if (!result?.data?.length) {
 				return
 			}
+
+			setHasMore(result.has_more || false)
 
 			const newMessages: IMessageItem4Render[] = []
 
@@ -168,22 +191,100 @@ export default function ChatboxWrapper(props: IChatboxWrapperProps) {
 				)
 			})
 
-			setMessages([]) // 历史消息回来之后，应该清空临时消息
+			// 替换历史消息
 			setHistoryMessages(newMessages)
+			// 清空临时消息
+			setMessages([])
+
 			if (newMessages?.length) {
 				// 如果下一步问题建议已开启，则请求接口获取
-				if (currentApp?.parameters?.suggested_questions_after_answer.enabled) {
+				if (currentApp?.parameters?.suggested_questions_after_answer?.enabled) {
 					getNextSuggestions(newMessages[newMessages.length - 1].id)
 				}
 			}
 		},
 		[
 			difyApi,
-			currentApp?.parameters?.suggested_questions_after_answer.enabled,
+			currentApp?.parameters?.suggested_questions_after_answer?.enabled,
 			currentAppId,
 			getNextSuggestions,
 			updateConversationInputs,
+			currentConversationId,
+			historyMessages.length,
 		],
+	)
+
+	/**
+	 * 加载更多历史消息（分页加载）
+	 */
+	const loadMoreMessages = useCallback(
+		async (conversationId: string = currentConversationId) => {
+			// 如果是临时 ID，则不获取历史消息
+			if (isTempId(conversationId)) {
+				return
+			}
+
+			let firstId = ''
+			if (historyMessages[0]?.id) {
+				firstId = historyMessages[0]?.id.replace('question-', '')
+			}
+
+			const result = await difyApi.listMessages(conversationId, {
+				first_id: firstId,
+				limit: defaultRequestLimit,
+			})
+
+			if (!result?.data?.length) {
+				return
+			}
+
+			setHasMore(result.has_more || false)
+
+			const newMessages: IMessageItem4Render[] = []
+
+			result.data.forEach(item => {
+				const createdAt = dayjs(item.created_at * 1000).format('YYYY-MM-DD HH:mm:ss')
+				newMessages.push(
+					{
+						id: item.id,
+						content: item.query,
+						status: 'success',
+						isHistory: true,
+						files: item.message_files?.filter(item => {
+							return item.belongs_to === MessageFileBelongsToEnum.user
+						}),
+						role: Roles.USER,
+						created_at: createdAt,
+					},
+					{
+						id: item.id,
+						content: item.answer,
+						status: item.status === 'error' ? item.status : 'success',
+						error: item.error || '',
+						isHistory: true,
+						files: item.message_files?.filter(item => {
+							return item.belongs_to === MessageFileBelongsToEnum.assistant
+						}),
+						feedback: item.feedback,
+						workflows:
+							workflowDataStorage.get({
+								appId: currentAppId || '',
+								conversationId,
+								messageId: item.id,
+								key: 'workflows',
+							}) || [],
+						agentThoughts: item.agent_thoughts || [],
+						retrieverResources: item.retriever_resources || [],
+						role: Roles.AI,
+						created_at: createdAt,
+					},
+				)
+			})
+
+			// 追加到历史消息前面
+			setHistoryMessages(prev => [...newMessages, ...prev])
+		},
+		[difyApi, historyMessages, currentConversationId],
 	)
 
 	const { agent, onRequest, messages, setMessages, currentTaskId } = useX({
@@ -192,7 +293,8 @@ export default function ChatboxWrapper(props: IChatboxWrapperProps) {
 		filesRef,
 		getNextSuggestions,
 		abortRef,
-		getConversationMessages,
+		getConversationMessages: (conversationId: string) =>
+			initConversationMessages(conversationId, false),
 		onConversationIdChange: id => {
 			setMessagesloadingEnabled(false)
 			setCurrentConversationId(id)
@@ -205,7 +307,7 @@ export default function ChatboxWrapper(props: IChatboxWrapperProps) {
 	const initConversationInfo = async () => {
 		// 有对话 ID 且非临时 ID 时，获取历史消息
 		if (currentConversationId && !isTempId(currentConversationId)) {
-			await getConversationMessages(currentConversationId)
+			await initConversationMessages(currentConversationId, false)
 			setInitLoading(false)
 		} else {
 			// 不管有没有参数，都结束 loading，开始展示内容
@@ -219,16 +321,26 @@ export default function ChatboxWrapper(props: IChatboxWrapperProps) {
 		} else {
 			// 只有允许 loading 时，才清空对话列表数据
 			setInitLoading(true)
+			setHasMore(false)
 			setMessages([])
 			setNextSuggestions([])
 			setHistoryMessages([])
+			setIsSwitchingConversation(true)
 		}
-		initConversationInfo()
 	}, [currentConversationId])
 
-	const onPromptsItemClick: GetProp<typeof Prompts, 'onItemClick'> = info => {
+	// 监听清空完成状态
+	useEffect(() => {
+		// 当所有状态都清空且正在切换会话时，获取新会话数据
+		if (isSwitchingConversation) {
+			initConversationInfo()
+			setIsSwitchingConversation(false) // 重置切换状态
+		}
+	}, [isSwitchingConversation, currentConversationId])
+
+	const onPromptsItemClick = (content: string) => {
 		onRequest({
-			content: info.data.description as string,
+			content,
 		})
 	}
 
@@ -276,10 +388,10 @@ export default function ChatboxWrapper(props: IChatboxWrapperProps) {
 
 	const fallbackCallback = useCallback(
 		(conversationId: string) => {
-			// 反馈成功后，重新获取历史消息
-			getConversationMessages(conversationId)
+			// 反馈成功后，重新获取历史消息，保持已加载的数据量
+			initConversationMessages(conversationId, true)
 		},
-		[getConversationMessages],
+		[initConversationMessages],
 	)
 
 	// 如果应用配置 / 对话列表加载中，则展示 loading
@@ -330,9 +442,11 @@ export default function ChatboxWrapper(props: IChatboxWrapperProps) {
 							abortRef.current()
 							if (currentTaskId) {
 								await difyApi.stopTask(currentTaskId)
-								getConversationMessages(currentConversationId!)
+								initConversationMessages(currentConversationId!, false)
 							}
 						}}
+						hasMore={hasMore}
+						onLoadMore={loadMoreMessages}
 						isFormFilled={isFormFilled}
 						onStartConversation={formValues => {
 							updateConversationInputs(formValues)
@@ -341,7 +455,7 @@ export default function ChatboxWrapper(props: IChatboxWrapperProps) {
 								onAddConversation()
 							}
 						}}
-						feedbackApi={difyApi.feedbackMessage}
+						feedbackApi={difyApi.createMessageFeedback}
 						feedbackCallback={fallbackCallback}
 						uploadFileApi={difyApi.uploadFile}
 						difyApi={difyApi}

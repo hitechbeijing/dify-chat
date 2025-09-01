@@ -34,6 +34,7 @@ pnpm add @dify-chat/core
 ```tsx
 import { AppContextProvider, ICurrentApp } from '@dify-chat/core';
 import { createDifyApiInstance } from '@dify-chat/api';
+import { generateUuidV4 } from '@dify-chat/helpers'
 
 const YourChatComponent = () => {
 
@@ -70,7 +71,7 @@ const YourChatComponent = () => {
     setAppLoading(false)
     setCurrentApp({
 			config: {
-				id: Math.random().toString(),
+				id: generateUuidV4(),
 				info: difyAppInfo,
         requestConfig: appConfig.requestConfig,
         answerForm: appConfig.answerForm,
@@ -111,12 +112,12 @@ const YourChatComponent = () => {
 在你的子组件中使用 `useAppContext` 钩子获取应用上下文：
 
 ```tsx
-import { useAppContext } from "@dify-chat/core";
+import { useAppContext } from '@dify-chat/core'
 
 const YourInnerComponent = () => {
-  const { currentApp, currentAppId } = useAppContext();
-  console.log(`当前应用ID：${currentAppId}`, `当前应用：${currentApp}`);
-};
+  const { currentApp, currentAppId } = useAppContext()
+  console.log(`当前应用ID：${currentAppId}`, `当前应用：${currentApp}`)
+}
 ```
 
 #### 对话上下文
@@ -136,12 +137,12 @@ const YourChatComponent = () => {
   const [currentConversationId, setCurrentConversationId] = useState('')
 
   // 实现获取对话列表的逻辑
-  const getConversationList = async () => {
+  const listConversations = async () => {
     setConversations([...])
   }
 
   useEffect(()=>{
-    getConversationList()
+    listConversations()
   }, [])
 
   return (
@@ -162,13 +163,10 @@ const YourChatComponent = () => {
 在你的子组件中使用 `useConversationsContext` 钩子获取对话上下文：
 
 ```tsx
-import { useConversationsContext } from "@dify-chat/core";
+import { useConversationsContext } from '@dify-chat/core'
 
 const YourInnerComponent = () => {
-  const { conversations, currentConversationId } = useConversationsContext();
-  console.log(
-    `当前对话ID：${currentConversationId}`,
-    `对话列表：${conversations}`,
-  );
-};
+  const { conversations, currentConversationId } = useConversationsContext()
+  console.log(`当前对话ID：${currentConversationId}`, `对话列表：${conversations}`)
+}
 ```
