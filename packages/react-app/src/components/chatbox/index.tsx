@@ -4,16 +4,13 @@ import { Bubble } from '@ant-design/x'
 import { DifyApi, IFile, IMessageItem4Render } from '@dify-chat/api'
 import { OpeningStatementDisplayMode, Roles, useAppContext } from '@dify-chat/core'
 import { isTempId, useIsMobile } from '@dify-chat/helpers'
-import { useThemeContext } from '@dify-chat/theme'
 import { FormInstance, GetProp, message, Spin } from 'antd'
-import { useDeferredValue, useEffect, useMemo, useRef } from 'react'
+import { useDeferredValue, useEffect, useEffectEvent, useMemo, useRef } from 'react'
 import InfiniteScroll from 'react-infinite-scroll-component'
 
 import { validateAndGenErrMsgs } from '@/utils'
 
-import LucideIcon from '../lucide-icon'
 import { MessageSender } from '../message-sender'
-import AppIcon from './app-icon'
 import MessageContent from './message/content'
 import MessageFooter from './message/footer'
 import { WelcomePlaceholder } from './welcome-placeholder'
@@ -118,57 +115,19 @@ export const Chatbox = (props: ChatboxProps) => {
 	} = props
 	const isMobile = useIsMobile()
 	const { currentApp } = useAppContext()
-	const { isDark } = useThemeContext()
-	const aiIcon = currentApp?.site?.use_icon_as_answer_icon ? (
-		<AppIcon hasContainer />
-	) : (
-		<LucideIcon
-			name="bot"
-			size={18}
-		/>
-	)
 
 	const roles: GetProp<typeof Bubble.List, 'roles'> = {
 		ai: {
 			placement: 'start',
-			avatar: !isMobile
-				? {
-						icon: aiIcon,
-						style: {
-							background: currentApp?.site?.icon_background || (isDark ? 'transparent' : '#fde3cf'),
-							border: isDark ? '1px solid var(--theme-border-color)' : 'none',
-							color: isDark ? 'var(--theme-text-color)' : '#666',
-						},
-					}
-				: undefined,
-			style: isMobile
-				? undefined
-				: {
-						// 减去一个头像的宽度
-						maxWidth: 'calc(100% - 44px)',
-					},
 		},
 		user: {
 			placement: 'end',
-			avatar: !isMobile
-				? {
-						icon: (
-							<LucideIcon
-								name="user"
-								size={18}
-							/>
-						),
-						style: {
-							background: '#87d068',
-						},
-					}
-				: undefined,
 			style: isMobile
 				? undefined
 				: {
 						// 减去一个头像的宽度
-						maxWidth: 'calc(100% - 44px)',
-						marginLeft: '44px',
+						maxWidth: '80%',
+						marginLeft: '20%',
 					},
 		},
 	}
@@ -185,6 +144,9 @@ export const Chatbox = (props: ChatboxProps) => {
 						<MessageContent
 							onSubmit={onSubmit}
 							messageItem={messageItem}
+							previewApi={params => {
+								return difyApi.filePreview(params)
+							}}
 						/>
 					)
 				},
@@ -250,15 +212,27 @@ export const Chatbox = (props: ChatboxProps) => {
 
 	// 监听 items 更新，滚动到最底部
 	const scrollContainerRef = useRef<HTMLDivElement>(null)
-	// 延迟更新，优化性能
-	const deferredItems = useDeferredValue(items)
-	useEffect(() => {
+
+	/**
+	 * 监听 items 更新，滚动到最底部
+	 */
+	const scroll2BottomWhenMessagesChange = useEffectEvent(() => {
+		// 如果非请求中，不滚动（防止影响下拉刷新功能）
+		if (!isRequesting) {
+			return
+		}
 		if (scrollContainerRef.current) {
 			scrollContainerRef.current.scrollTo({
 				behavior: 'smooth',
 				top: scrollContainerRef.current.scrollHeight,
 			})
 		}
+	})
+
+	// 延迟更新，优化性能
+	const deferredItems = useDeferredValue(items)
+	useEffect(() => {
+		scroll2BottomWhenMessagesChange()
 	}, [deferredItems])
 
 	// 获取应用的对话开场白展示模式
@@ -275,17 +249,15 @@ export const Chatbox = (props: ChatboxProps) => {
 
 	return (
 		<div className="w-full h-full overflow-hidden my-0 mx-auto box-border flex flex-col gap-4 relative">
-			<div
-				className="w-full h-full overflow-auto pt-1 pb-24"
-				ref={scrollContainerRef}
-			>
+			<div className="w-full h-full overflow-hidden pt-1 pb-24">
 				<div
 					id="scrollableDiv"
+					ref={scrollContainerRef}
 					style={{
-						height: '100%', // Specify a value
+						height: '100%',
 						overflow: 'auto',
 						display: 'flex',
-						flexDirection: messageItems.length > 4 ? 'column-reverse' : 'column',
+						flexDirection: 'column-reverse',
 					}}
 				>
 					<InfiniteScroll
@@ -301,13 +273,15 @@ export const Chatbox = (props: ChatboxProps) => {
 								/>
 							</div>
 						}
-						inverse={true}
+						inverse
 						style={{
 							display: 'flex',
 							flexDirection: 'column-reverse',
+							// 减去除消息列表外其他纵向元素的高度
+							minHeight: 'calc(100vh - 10.25rem)',
 						}}
 					>
-						<div className="flex-1 w-full md:!w-3/4 mx-auto px-3 md:px-0 box-border">
+						<div className="flex-1 w-full md:!w-[720px] mx-auto px-3 pb-6 md:px-0 box-border">
 							{/* 🌟 消息列表 */}
 							<Bubble.List
 								items={items}
@@ -316,7 +290,7 @@ export const Chatbox = (props: ChatboxProps) => {
 
 							{/* 下一步问题建议 当存在消息列表，且非正在对话时才展示 */}
 							{nextSuggestions?.length && items.length && !isRequesting ? (
-								<div className="p-3 md:pl-[44px] mt-3">
+								<div className="py-3 mt-3">
 									<div className="text-desc">🤔 你可能还想问:</div>
 									<div>
 										{nextSuggestions?.map(item => {
@@ -354,13 +328,13 @@ export const Chatbox = (props: ChatboxProps) => {
 					</InfiniteScroll>
 				</div>
 				<div
-					className="absolute bottom-0 bg-theme-main-bg w-full md:!w-3/4 left-1/2"
+					className="absolute bottom-0 bg-theme-main-bg w-full md:max-w-[720px] left-1/2"
 					style={{
 						transform: 'translateX(-50%)',
 					}}
 				>
 					{/* 🌟 输入框 */}
-					<div className="px-3">
+					<div>
 						<MessageSender
 							onSubmit={async (...params) => {
 								return validateAndGenErrMsgs(entryForm).then(res => {

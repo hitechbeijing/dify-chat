@@ -1,7 +1,7 @@
 {
 	"name": "dify-chat-app-react",
 	"private": true,
-	"version": "0.5.0",
+	"version": "0.5.5",
 	"scripts": {
 		"build": "rsbuild build",
 		"dev": "rsbuild dev",
@@ -40,7 +40,7 @@
 		"pure-react-router": "catalog:",
 		"react": "catalog:",
 		"react-dom": "catalog:",
-		"react-infinite-scroll-component": "^6.1.0",
+		"react-infinite-scroll-component": "catalog:",
 		"react-markdown": "catalog:",
 		"react-photo-view": "catalog:",
 		"react-syntax-highlighter": "catalog:",
@@ -49,7 +49,6 @@
 		"remark-breaks": "catalog:",
 		"remark-gfm": "catalog:",
 		"remark-math": "catalog:",
-		"semver": "catalog:",
 		"tailwind-merge": "catalog:",
 		"zustand": "catalog:"
 	},
@@ -69,7 +68,6 @@
 		"@types/react": "catalog:",
 		"@types/react-dom": "catalog:",
 		"@types/react-syntax-highlighter": "catalog:",
-		"@types/semver": "catalog:",
 		"dayjs": "catalog:",
 		"eslint": "catalog:",
 		"eslint-plugin-react": "catalog:",
